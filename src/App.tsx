@@ -224,15 +224,32 @@ export default function App() {
 
         const pinIcon = L.divIcon({
           html: `
-            <div class="flex items-center gap-1.5 bg-[#002B5B] border-2 border-[#C5A059] text-white font-extrabold text-[11px] py-1 px-2.5 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-all cursor-pointer whitespace-nowrap">
-              <span class="text-xs">📍</span>
-              <span>${hub.name.split(" ")[0]}</span>
-              <span class="bg-[#C5A059] text-slate-900 px-1.5 py-0.2 rounded-full text-[9px] font-black">${count}</span>
+            <div class="relative flex items-center justify-center w-[140px] h-[36px]">
+              <!-- Ambient Neon Pulsing Halo -->
+              <span class="absolute inline-flex w-[134px] h-7 rounded-full bg-[#FFAA00]/25 animate-ping opacity-60"></span>
+              
+              <!-- Premium Dark Hub Capsule -->
+              <div class="relative flex items-center gap-1.5 bg-slate-950 border-2 border-[#FFAA00] text-white font-black py-1 px-2 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300 w-full h-full cursor-pointer whitespace-nowrap">
+                <!-- ID badge -->
+                <span class="bg-[#FFAA00] text-slate-950 px-1.5 py-0.5 rounded-lg text-[9px] font-black tracking-tighter shadow-sm flex items-center justify-center h-5">
+                  ${id.toUpperCase()}
+                </span>
+                
+                <!-- Hub Name -->
+                <span class="text-[10px] text-white font-black tracking-tight select-none flex-1 truncate text-left">
+                  ${hub.name.split(" ")[0]}
+                </span>
+                
+                <!-- Stock/Item Count Pin badge -->
+                <span class="bg-rose-600 text-white min-w-[20px] h-5 flex items-center justify-center rounded-full text-[9px] font-black border border-rose-500/30 shadow px-1">
+                  ${count}
+                </span>
+              </div>
             </div>
           `,
           className: "leaflet-custom-marker",
-          iconSize: [0, 0],
-          iconAnchor: [40, 20]
+          iconSize: [140, 36],
+          iconAnchor: [70, 18]
         });
 
         const marker = L.marker(coords, { icon: pinIcon }).addTo(mapInstance);
