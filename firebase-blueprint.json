@@ -1,0 +1,64 @@
+{
+  "entities": {
+    "Item": {
+      "title": "Item",
+      "description": "Lost and found items stored in smart locker hubs",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "hubId": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "AVAILABLE",
+            "RESERVED",
+            "PICKED_UP"
+          ]
+        },
+        "otp": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reservedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "pickedUpAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "hubId",
+        "category",
+        "icon",
+        "status",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "items/{itemId}": {
+      "schema": "Item",
+      "description": "Lost items stored in hubs"
+    }
+  }
+}

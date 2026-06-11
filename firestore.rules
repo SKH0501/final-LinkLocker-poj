@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /items/{itemId} {
+      // Allow anybody to read, query, and search the lost items
+      allow read, get, list: if true;
+
+      // Allow anybody to register lost items or update item statuses (reservation, pickup) for the campus community
+      allow create, update: if true;
+
+      // Restrict deleting items to prevent malicious data destruction
+      allow delete: if false;
+    }
+  }
+}

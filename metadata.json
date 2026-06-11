@@ -1,0 +1,6 @@
+{
+  "name": "LinkLocker",
+  "description": "대학 캠퍼스용 무인 사물함 실시간 분실물 관리 플랫폼 MVP 프로토타입",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkLocker | ERICA 사용자 센터</title>
+  
+  <!-- CSS & Icon Libraries -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+    /* 한양 블루 & 한양 골드 특화 색상 */
+    .bg-hanyang-blue { background-color: #003C71; }
+    .text-hanyang-blue { color: #003C71; }
+    .border-hanyang-blue { border-color: #003C71; }
+    .bg-hanyang-gold { background-color: #C5A059; }
+    .text-hanyang-gold { color: #C5A059; }
+    .border-hanyang-gold { border-color: #C5A059; }
+    
+    #map-canvas {
+      height: 200px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col pb-10">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-[#003C71] to-[#042849] border-b-4 border-[#C5A059] text-white py-4 px-4 sticky top-0 z-50 shadow-md">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <span class="text-2xl">📦</span>
+        <div>
+          <h1 class="font-extrabold text-base tracking-tight flex items-center gap-1.5">
+            LinkLocker
+            <span class="bg-[#C5A059] text-sky-950 font-bold text-[9px] px-1.5 py-0.5 rounded-full select-none">사용자</span>
+          </h1>
+          <p class="text-[10px] text-slate-300">한양대 ERICA 분실물 수령 서비스</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-1 text-xs">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-mono text-slate-200">실시간 연동중</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Core Wrapper -->
+  <main class="max-w-md mx-auto w-full p-4 space-y-4 flex-1">
+
+    <!-- 지도 카드 구역 -->
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 space-y-3 overflow-hidden">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-1.5">
+            📍 ERICA 캠퍼스 분실물 Hub 지도
+          </h3>
+          <p class="text-[10px] text-slate-400">사물함이 위치한 건물을 터치해 분실물을 조회하세요.</p>
+        </div>
+        <button id="btn-show-all" class="text-[10px] bg-slate-600 hover:bg-slate-700 text-white font-bold py-1 px-2.5 rounded-lg transition hidden">
+          전체 보기
+        </button>
+      </div>
+
+      <!-- 지도 캔버스 -->
+      <div id="map-canvas" class="rounded-2xl border border-slate-100 bg-slate-100 overflow-hidden shadow-inner"></div>
+    </section>
+
+    <!-- 예약 완료 알림 배너 (OTP 확인 구역) -->
+    <section id="reservation-banner" class="bg-yellow-50 border-2 border-dashed border-[#C5A059] p-4 rounded-3xl relative shadow-sm hidden">
+      <div class="flex justify-between items-start">
+        <div class="flex gap-2.5 items-center">
+          <span class="text-xl">⌛</span>
+          <div>
+            <h4 class="font-extrabold text-[#003C71] text-xs">스마트 보관함 매칭 완료</h4>
+            <p id="res-location-text" class="text-slate-600 text-[10px] mt-0.5 font-semibold">학술정보관 스마트 사물함 구역</p>
+          </div>
+        </div>
+        <button id="btn-cancel-reservation" class="text-[10px] text-red-600 hover:text-red-800 font-bold underline transition">
+          예약 취소
+        </button>
+      </div>
+
+      <div class="mt-3 bg-white rounded-2xl border border-yellow-200 p-3 flex items-center justify-between">
+        <div>
+          <span class="text-[9px] text-slate-400 font-bold block">1회용 사물함 승인 키 (OTP)</span>
+          <span id="otp-code-display" class="text-xl font-mono font-black text-blue-950 tracking-widest bg-slate-100 py-1 px-3.5 rounded-lg mt-0.5 inline-block">
+            ------
+          </span>
+        </div>
+        <div class="text-right border-l border-slate-100 pl-3">
+          <span class="text-[9px] text-slate-400 font-bold block">유효 유치시간</span>
+          <span id="reservation-timer" class="text-sm font-extrabold text-sky-950 font-mono">
+            03:00
+          </span>
+        </div>
+      </div>
+    </section>
+
+    <section id="pickup-success-banner" class="bg-emerald-50 border border-emerald-300 p-4 rounded-3xl flex flex-col justify-center items-center text-center gap-1 shadow-sm hidden">
+      <span class="text-3xl">🎉</span>
+      <h4 class="font-bold text-emerald-800 text-sm">수령이 완료되었습니다!</h4>
+      <p class="text-[10px] text-emerald-600">성장하는 한양대학교 ERICA 스마트 캠퍼스를 이용해 주셔서 감사합니다.</p>
+      <button id="btn-close-success" class="mt-2 text-[10px] bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1 px-4 rounded-lg">
+        확인
+      </button>
+    </section>
+
+    <!-- 검색 & 필터 구역 -->
+    <section class="space-y-2">
+      <div class="flex gap-2">
+        <input
+          id="search-input"
+          type="text"
+          placeholder="분실물 이름을 검색해보세요..."
+          class="flex-1 bg-white border border-slate-200 text-xs rounded-2xl px-4 py-2.5 outline-none focus:border-[#003C71]"
+        />
+        <select
+          id="category-filter"
+          class="bg-white border border-slate-200 text-xs rounded-2xl px-3 py-2.5 outline-none cursor-pointer text-slate-700 font-semibold"
+        >
+          <option value="all">모든 품목</option>
+          <option value="전자기기">🎧 전자기기</option>
+          <option value="지갑/가방">👛 지갑/가방</option>
+          <option value="도서">📘 도서</option>
+          <option value="학생증">🪪 학생증</option>
+        </select>
+      </div>
+
+      <div class="flex gap-1 overflow-x-auto pb-1 text-xs">
+        <span class="text-slate-400 font-bold shrink-0 text-[10px] self-center">필터:</span>
+        <button id="filter-hub-all" class="bg-[#003C71] text-white px-3 py-1 rounded-full text-[10px] font-bold shadow-sm whitespace-nowrap">전체</button>
+        <button id="filter-hub-h1" class="bg-white text-slate-500 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">학생회관</button>
+        <button id="filter-hub-h2" class="bg-white text-slate-500 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">학술정보관</button>
+        <button id="filter-hub-h3" class="bg-white text-slate-500 border border-slate-200 px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap">제1공학관</button>
+      </div>
+    </section>
+
+    <!-- 분실물 목록 -->
+    <section class="space-y-2">
+      <h4 id="list-total-txt" class="font-bold text-xs text-slate-500 tracking-wider">보관된 분실물 (0개)</h4>
+      
+      <div id="items-list-container" class="grid grid-cols-1 gap-3">
+        <!-- 동적 삽입 구역 -->
+        <div class="bg-white rounded-3xl p-8 border border-slate-100 flex flex-col justify-center items-center text-center gap-2">
+          <p class="text-xs text-slate-400">품목을 불러오고 있습니다...</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 상세/예약 모달창 -->
+  <div id="detail-modal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-5 border border-slate-100 text-center space-y-4">
+      <div id="modal-icon" class="w-16 h-16 bg-slate-100 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-inner border border-slate-200">
+        📌
+      </div>
+      
+      <div>
+        <span id="modal-category" class="bg-blue-50 text-[#003C71] px-2 py-0.5 rounded text-[10px] font-bold">카테고리</span>
+        <h3 id="modal-title" class="font-extrabold text-base text-slate-900 mt-1">에어팟 프로</h3>
+        <p class="text-[10px] text-slate-400 mt-0.5">상태: 보관 마운트</p>
+      </div>
+
+      <div class="bg-slate-50 rounded-2xl p-4 text-left text-xs space-y-2">
+        <div class="flex justify-between">
+          <span class="text-slate-400 font-semibold">보관 Hub</span>
+          <span id="modal-hub" class="text-slate-800 font-bold">학술정보관 Hub</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400 font-semibold">설치 위치</span>
+          <span id="modal-loc" class="text-[#003C71] font-bold">지하 1층 ATM 기기 옆</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-slate-400 font-semibold">등록 날짜</span>
+          <span class="text-slate-600 font-semibold">하루 전</span>
+        </div>
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btn-close-modal" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-500 font-bold py-3 rounded-2xl text-xs transition">
+          닫기
+        </button>
+        <button id="btn-reserve-submit" class="flex-1 bg-[#003C71] hover:bg-[#042849] text-white font-extrabold py-3 rounded-2xl text-xs transition shadow-md">
+          찾아가기 예약
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-[#003C71] text-xs text-center border-t-2 border-[#C5A059] py-4 text-slate-400 mt-auto">
+    <p class="font-bold text-[#C5A059]">LinkLocker ERICA Lost & Found System</p>
+  </footer>
+
+  <!-- App Core JS 연결 -->
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

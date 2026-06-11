@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LinkLocker Hub | 무인 사물함 터미널</title>
+  
+  <!-- CSS Support -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between overflow-hidden">
+
+  <!-- Tablet Frame Bezel Header -->
+  <header class="bg-black/40 border-b border-white/10 p-4 px-6 flex justify-between items-center shadow-lg">
+    <div class="flex items-center gap-3">
+      <div class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></div>
+      <div>
+        <h1 class="font-extrabold text-sm text-[#C5A059] tracking-wider font-mono">LINKLOCKER HUB TERMINAL v1.4</h1>
+        <p class="text-[9px] text-slate-400">한양대학교 ERICA 캠퍼스 전용 자동 사물함 승인 기기</p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-slate-400 font-bold">기기 설치국소:</span>
+      <select id="hub-select" class="bg-slate-800 border border-slate-700/50 text-xs py-1.5 px-3 rounded font-bold text-[#C5A059] outline-none cursor-pointer">
+        <option value="h1">학생회관 Hub</option>
+        <option value="h2" selected>학술정보관 Hub</option>
+        <option value="h3">제1공학관 Hub</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Locker Workspace -->
+  <main class="flex-1 max-w-5xl mx-auto w-full p-4 grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch overflow-hidden">
+
+    <!-- 좌측 단람: 사물함 디렉토리 보관도 -->
+    <section class="md:col-span-6 bg-slate-950/60 border border-white/5 rounded-3xl p-5 flex flex-col justify-between">
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="font-extrabold text-xs text-[#C5A059] tracking-widest uppercase">
+            사물함 입출고 현황 (Cabinet Status)
+          </h2>
+          <span id="active-hub-badge" class="bg-blue-900/60 text-sky-200 border border-blue-500/30 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase font-mono">
+            학술정보관
+          </span>
+        </div>
+        <p class="text-[10px] text-slate-400 leading-relaxed mb-4">현재 설치국소의 잠금장치 결합 상태 및 내장 분실물 마운트 정보입니다.</p>
+
+        <!-- Dynamic Grid Boxes -->
+        <div id="cabinets-grid" class="grid grid-cols-4 gap-2">
+          <!-- 동적 주입 -->
+          <div class="col-span-full py-8 text-center text-xs text-slate-500">배치도를 구상하고 있습니다...</div>
+        </div>
+      </div>
+
+      <!-- 하단 안내 배너 -->
+      <div class="mt-4 border-t border-white/5 pt-4">
+        <div class="bg-slate-900 rounded-2xl p-3 border border-white/5 text-[9px] leading-relaxed text-slate-400 space-y-1.5 font-semibold">
+          <p class="flex items-center gap-2"><span class="text-[#C5A059]">📍</span> <span id="kiosk-address-txt">설치 위치 : 학술정보관 지하 1층 로비 복도</span></p>
+          <p class="flex items-center gap-2"><span class="text-[#C5A059]">🔒</span> <span>보관 사물함의 1회용 승인 비밀번호(OTP)는 LinkLocker 모바일 웹에서 찾아가기 신청 즉시 발급됩니다.</span></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 우측 단람: 승인 비밀카드 키패드 -->
+    <section class="md:col-span-6 bg-slate-950 border border-white/10 rounded-3xl p-5 flex flex-col justify-between relative overflow-hidden">
+      
+      <div class="space-y-4">
+        <div class="text-center">
+          <span class="text-[10px] font-mono tracking-widest text-[#C5A059] block font-extrabold uppercase">SECURITY VALIDATION</span>
+          <h3 class="font-extrabold text-sm text-slate-400 mt-1">예약 발급된 일회용 OTP 6자리를 입력하세요</h3>
+        </div>
+
+        <!-- 6자리 숫자 표기 구역 -->
+        <div class="relative">
+          <div id="otp-input-screen" class="bg-[#050D19] border border-slate-800 rounded-2xl py-3 px-2 text-center text-2xl font-mono font-black tracking-widest text-[#C5A059] shadow-inner min-h-[58px] flex items-center justify-center">
+            🔑 ------
+          </div>
+          <button id="btn-keypad-clear" class="absolute right-4 top-4 text-[10px] bg-white/10 hover:bg-white/15 px-2.5 py-1 rounded-lg text-white font-bold transition hidden">
+            초기화
+          </button>
+        </div>
+
+        <!-- 버튼 키패드 그리드 -->
+        <div class="grid grid-cols-3 gap-2 pb-2">
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="1">1</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="2">2</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="3">3</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="4">4</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="5">5</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="6">6</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="7">7</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="8">8</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="9">9</button>
+          
+          <button id="btn-keypad-correct" class="select-none bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800 text-[10px] py-3 rounded-xl transition font-bold text-red-400 active:scale-95 uppercase leading-none">CORRECT</button>
+          <button class="btn-pad select-none bg-slate-900 hover:bg-slate-800 border border-slate-800 text-lg py-2.5 rounded-xl transition font-extrabold active:scale-95" data-val="0">0</button>
+          <button id="btn-keypad-confirm" class="select-none bg-gradient-to-b from-[#C5A059] to-amber-600 hover:opacity-90 border border-amber-600 text-[11px] py-3 rounded-xl transition font-extrabold text-sky-950 active:scale-95 uppercase shadow-md leading-none">CONFIRM</button>
+        </div>
+
+        <!-- 인포/오류메세지 출력 배너 -->
+        <div id="validation-error" class="bg-red-950/80 border border-red-500/30 p-2.5 rounded-xl text-[10px] text-red-300 font-bold leading-normal text-center hidden">
+          ⚠️ 잘못 입력된 OTP 코드입니다.
+        </div>
+      </div>
+
+      <div class="mt-4 border-t border-white/5 pt-3 text-center text-[10px] text-slate-500 font-semibold tracking-wide">
+        비인가 수집물 탈취 행위 시 형사 처벌의 대상이 될 수 있습니다.
+      </div>
+
+      <!-- ============================================ -->
+      <!-- 도어락 해제 성공 팝업 오버레이 (Success Overlay) -->
+      <!-- ============================================ -->
+      <div id="unlockbox-overlay" class="absolute inset-0 bg-slate-950/98 z-30 flex flex-col items-center justify-center text-center p-6 hidden">
+        <div class="space-y-4">
+          <div class="text-5xl animate-bounce">🔓✨</div>
+          <h2 class="font-extrabold text-xl text-[#C5A059] tracking-tight">인증성공! 사물함 자동 개방</h2>
+          
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl max-w-xs mx-auto">
+            <span class="text-[9px] text-slate-400 font-semibold uppercase block">개방된 사물함 보관함 번호</span>
+            <span id="unlocked-box-number" class="text-3xl font-mono font-black text-amber-300 tracking-wider">
+              A-15
+            </span>
+            <div class="pt-2 border-t border-slate-800/80 mt-2 text-xs">
+              <span id="unlocked-item-badge" class="bg-blue-900/40 text-blue-300 px-2.5 py-0.5 rounded text-[8px] font-bold">전자기기</span>
+              <p id="unlocked-item-name" class="text-slate-200 font-extrabold mt-1">에어팟 프로</p>
+            </div>
+          </div>
+
+          <p class="text-[10px] text-emerald-400 font-bold leading-normal">
+            사물함 도어가 성공적으로 열렸습니다. 물품을 수령하신 후 아래 확인 버튼을 클릭하십시오.
+          </p>
+
+          <button id="btn-pickup-success-confirm" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-8 py-3 rounded-2xl transition shadow-lg shadow-emerald-950">
+            수령 완료 및 잠금
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="bg-black/40 border-t border-white/5 py-4 text-center text-[10px] text-slate-500 font-semibold">
+    한양대학교 ERICA 소프트웨어융합대학 학사 MVP 시연용 단말
+  </footer>
+
+  <!-- Firebase & App Script Import -->
+  <script type="module">
+    import { db, HUBS } from "./firebase.js";
+    import { collection, query, onSnapshot, updateDoc, doc, Timestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    let cabinetItems = [];
+    let currentHubId = "h2";
+    let typedCode = "";
+    let matchingItemSuccess = null;
+
+    const hubSelect = document.getElementById("hub-select");
+    const activeHubBadge = document.getElementById("active-hub-badge");
+    const kioskAddressTxt = document.getElementById("kiosk-address-txt");
+    const cabinetsGrid = document.getElementById("cabinets-grid");
+    const otpInputScreen = document.getElementById("otp-input-screen");
+    const btnKeypadClear = document.getElementById("btn-keypad-clear");
+    const btnKeypadCorrect = document.getElementById("btn-keypad-correct");
+    const btnKeypadConfirm = document.getElementById("btn-keypad-confirm");
+    const validationError = document.getElementById("validation-error");
+    const unlockboxOverlay = document.getElementById("unlockbox-overlay");
+    const btnPickupSuccessConfirm = document.getElementById("btn-pickup-success-confirm");
+    const unlockedBoxNumber = document.getElementById("unlocked-box-number");
+    const unlockedItemBadge = document.getElementById("unlocked-item-badge");
+    const unlockedItemName = document.getElementById("unlocked-item-name");
+
+    // 1. Listen to items in real-time
+    onSnapshot(query(collection(db, "items")), (snapshot) => {
+      cabinetItems = [];
+      snapshot.forEach(doc => {
+        cabinetItems.push({ id: doc.id, ...doc.data() });
+      });
+      renderCabinetsLayout();
+    });
+
+    // 2. Change Hub terminal
+    hubSelect.addEventListener("change", (e) => {
+      currentHubId = e.target.value;
+      const hubDetail = HUBS[currentHubId];
+      activeHubBadge.innerText = hubDetail.name.split(" ")[0];
+      kioskAddressTxt.innerText = `설치 위치 : ${hubDetail.location}`;
+      resetSelections();
+      renderCabinetsLayout();
+    });
+
+    function resetSelections() {
+      typedCode = "";
+      matchingItemSuccess = null;
+      otpInputScreen.innerText = "🔑 ------";
+      btnKeypadClear.classList.add("hidden");
+      validationError.classList.add("hidden");
+      unlockboxOverlay.classList.add("hidden");
+    }
+
+    // 3. Render physical Cabinet Safe-boxes grid
+    function renderCabinetsLayout() {
+      cabinetsGrid.innerHTML = "";
+      
+      for (let idx = 1; idx <= 8; idx++) {
+        const boxIdNum = idx + 12;
+        let itemInside = null;
+        
+        if (currentHubId === "h1" && idx === 1) itemInside = cabinetItems.find(i => i.id === "item_wallet");
+        if (currentHubId === "h2" && idx === 2) itemInside = cabinetItems.find(i => i.id === "item_airpods");
+        if (currentHubId === "h2" && idx === 5) itemInside = cabinetItems.find(i => i.id === "item_idcard");
+        if (currentHubId === "h3" && idx === 3) itemInside = cabinetItems.find(i => i.id === "item_book");
+
+        let borderClass = "border-white/5 bg-slate-900/60 text-slate-600";
+        let lockSymbol = "🔒";
+        let statusLabel = "사용가능";
+
+        if (itemInside) {
+          if (itemInside.status === "RESERVED") {
+            borderClass = "border-blue-500 bg-blue-950/45 text-blue-300";
+            lockSymbol = "🔐";
+            statusLabel = "예약완료";
+          } else if (itemInside.status === "AVAILABLE") {
+            borderClass = "border-amber-500/40 bg-amber-500/10 text-amber-500";
+            lockSymbol = "🔒";
+            statusLabel = itemInside.name.split(" ")[0];
+          } else if (itemInside.status === "PICKED_UP") {
+            borderClass = "border-emerald-500/10 bg-emerald-500/5 text-emerald-500/30";
+            lockSymbol = "🔓";
+            statusLabel = "수령완료";
+          }
+        }
+
+        const boxHtml = `
+          <div class="aspect-[1/1] border-2 rounded-xl flex flex-col items-center justify-between p-1.5 select-none ${borderClass}">
+            <span class="text-[9px] font-mono font-bold">Safe ${boxIdNum}</span>
+            <span class="text-base">${lockSymbol}</span>
+            <span class="text-[8px] font-bold truncate max-w-full">${statusLabel}</span>
+          </div>
+        `;
+        cabinetsGrid.insertAdjacentHTML("beforeend", boxHtml);
+      }
+    }
+
+    // 4. Handle tactile keypad actions
+    document.querySelectorAll(".btn-pad").forEach(button => {
+      button.addEventListener("click", () => {
+        if (typedCode.length < 6) {
+          typedCode += button.getAttribute("data-val");
+          updateOtpScreen();
+        }
+      });
+    });
+
+    btnKeypadCorrect.addEventListener("click", () => {
+      typedCode = typedCode.slice(0, -1);
+      updateOtpScreen();
+    });
+
+    btnKeypadClear.addEventListener("click", () => {
+      typedCode = "";
+      updateOtpScreen();
+    });
+
+    function updateOtpScreen() {
+      if (typedCode) {
+        otpInputScreen.innerText = typedCode;
+        otpInputScreen.className = "bg-[#050D19] border border-slate-800 rounded-2xl py-3 px-2 text-center text-2xl font-mono font-black tracking-widest text-[#C5A059] shadow-inner min-h-[58px] flex items-center justify-center";
+        btnKeypadClear.classList.remove("hidden");
+      } else {
+        otpInputScreen.innerText = "🔑 ------";
+        btnKeypadClear.classList.add("hidden");
+      }
+      validationError.classList.add("hidden");
+    }
+
+    // 5. Verify OTP input
+    btnKeypadConfirm.addEventListener("click", async () => {
+      validationError.classList.add("hidden");
+      
+      if (typedCode.length !== 6) {
+        validationError.innerText = "⚠️ OTP 6자리를 한 자도 빠짐없이 입력하세요.";
+        validationError.classList.remove("hidden");
+        return;
+      }
+
+      const match = cabinetItems.find(
+        i => i.hubId === currentHubId && i.otp === typedCode && i.status === "RESERVED"
+      );
+
+      if (match) {
+        matchingItemSuccess = match;
+        
+        // Render success overlays
+        const boxNumber = (cabinetItems.indexOf(match) + 1) * 3 + 12;
+        unlockedBoxNumber.innerText = `A-${boxNumber}`;
+        unlockedItemBadge.innerText = match.category;
+        unlockedItemName.innerText = match.name;
+        
+        unlockboxOverlay.classList.remove("hidden");
+
+        // Write "PICKED_UP" update back to firestore collections to sync with mobile
+        try {
+          const itemRef = doc(db, "items", match.id);
+          await updateDoc(itemRef, {
+            status: "PICKED_UP",
+            pickedUpAt: Timestamp.now()
+          });
+        } catch (error) {
+          console.error("수령 DB 갱신 에러 :", error);
+        }
+      } else {
+        validationError.innerText = "⚠️ 잘못된 승인 키이거나 해당 보관함에 들어있는 물건이 아닙니다.";
+        validationError.classList.remove("hidden");
+      }
+    });
+
+    // 6. Confirm pickups to finalize cycle
+    btnPickupSuccessConfirm.addEventListener("click", () => {
+      resetSelections();
+    });
+
+    // Run first layout rendering
+    renderCabinetsLayout();
+  </script>
+</body>
+</html>
