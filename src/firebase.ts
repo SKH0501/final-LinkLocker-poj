@@ -38,6 +38,8 @@ export interface LostItem {
   createdAt: Timestamp;
   reservedAt: Timestamp | null;
   pickedUpAt: Timestamp | null;
+  slotIndex?: number;
+  type?: "lost" | "personal";
 }
 
 // Map Hub IDs to Hub Names (specifically targeting Hanyang Univ. style)
@@ -69,7 +71,9 @@ const DEFAULT_ITEMS = [
     status: "AVAILABLE",
     otp: null,
     reservedAt: null,
-    pickedUpAt: null
+    pickedUpAt: null,
+    slotIndex: 4,
+    type: "lost"
   },
   {
     id: "item_wallet",
@@ -80,7 +84,9 @@ const DEFAULT_ITEMS = [
     status: "AVAILABLE",
     otp: null,
     reservedAt: null,
-    pickedUpAt: null
+    pickedUpAt: null,
+    slotIndex: 1,
+    type: "lost"
   },
   {
     id: "item_book",
@@ -91,7 +97,9 @@ const DEFAULT_ITEMS = [
     status: "AVAILABLE",
     otp: null,
     reservedAt: null,
-    pickedUpAt: null
+    pickedUpAt: null,
+    slotIndex: 8,
+    type: "lost"
   },
   {
     id: "item_idcard",
@@ -102,7 +110,9 @@ const DEFAULT_ITEMS = [
     status: "AVAILABLE",
     otp: null,
     reservedAt: null,
-    pickedUpAt: null
+    pickedUpAt: null,
+    slotIndex: 11,
+    type: "lost"
   }
 ];
 
